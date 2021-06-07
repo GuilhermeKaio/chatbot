@@ -53,19 +53,34 @@ async function authenticate(req, res){
 }
 
 async function currencyExchange(req, res){
-    let { target } = req.params;    
+    let { target } = req.body;
 
-    let amount = 52;
+    if (!target)
+        return res.status(400).send({ error: 'Invalid currency'});
 
-    await axios.get(`https://www.amdoren.com/api/currency.php?api_key=${authConfig.apiKey}&from=EUR&to=GBD&amount=${amount}`)
-        .then(response => {
+    const user = await Account.findOne({ _id: req.userId });
+
+    if (!user)
+        return res.status(400).send({ error: 'User not found'});
+
+    if (user.currency === target)
+        return res.status(400).send({ error: 'Invalid currency exchange' });
+
+    await axios.get(`https://www.amdoren.com/api/currency.php?api_key=${authConfig.apiKey}&from=${user.currency}&to=${target}&amount=${user.balance}`)
+        .then(async (response) => {
+            if(response.data.error === 320){
+                await Account.findOneAndUpdate(req.userId, { balance: response.data.amount, currency: target })
+                return res.status(200).json({ amount: response.data.amount });
+            }
+
             if(response.data.error > 0){
                 return res.status(400).json({
                     error: response.data.error,
-                    error_message: response.data.error_message,
-                    id: req.userId
+                    error_message: response.data.error_message
                 });
             }
+
+            await Account.findOneAndUpdate(req.userId, { balance: response.data.amount, currency: target })
 
             return res.status(200).json({ amount: response.data.amount });
         })

@@ -8,7 +8,8 @@ const accountSchema = new Schema({
     },
     currency: {
         type: String,
-        required: [true, 'account without currency code']
+        required: [true, 'account without currency code'],
+        uppercase: true
     },
     email:{
         type: String,

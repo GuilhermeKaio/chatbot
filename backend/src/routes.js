@@ -10,7 +10,7 @@ router.post('/api/reg', balanceController.register);
 
 router.use(authMiddleware);
 
-router.get('/api/exchange', balanceController.currencyExchange);
+router.post('/api/exchange', balanceController.currencyExchange);
 
 
 module.exports = router; 
