@@ -11,6 +11,7 @@ router.post('/api/reg', balanceController.register);
 router.use(authMiddleware);
 
 router.post('/api/exchange', balanceController.currencyExchange);
+router.post('/api/deposit', balanceController.deposit);
 
 
 module.exports = router; 
