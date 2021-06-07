@@ -16,4 +16,4 @@ router.post('/api/withdraw', balanceController.withdraw);
 router.get('/api/balance', balanceController.balance);
 
 
-module.exports = router; 
+module.exports = router;

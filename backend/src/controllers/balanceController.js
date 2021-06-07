@@ -1,4 +1,5 @@
 const Account = require('../database/model/account');
+const { depositLog, withdrawLog, exchangeLog } = require('../database/model/log');
 const axios = require('axios');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
@@ -63,13 +64,15 @@ async function currencyExchange(req, res){
     if (!user)
         return res.status(400).send({ error: 'User not found'});
 
-    if (user.currency === target)
+        
+    if (user.currency === target.toUpperCase())
         return res.status(400).send({ error: 'Invalid currency exchange' });
 
     await axios.get(`https://www.amdoren.com/api/currency.php?api_key=${authConfig.apiKey}&from=${user.currency}&to=${target}&amount=${user.balance}`)
         .then(async (response) => {
             if(response.data.error === 320){
                 await Account.findOneAndUpdate(req.userId, { balance: response.data.amount, currency: target })
+                await exchangeLog.create({ code: Date.now(), accountId: req.userId, nextCurrency: target, previousCurrency: user.currency });
                 return res.status(200).json({ amount: response.data.amount });
             }
 
@@ -81,6 +84,7 @@ async function currencyExchange(req, res){
             }
 
             await Account.findOneAndUpdate(req.userId, { balance: response.data.amount, currency: target })
+            await exchangeLog.create({ code: Date.now(), accountId: req.userId, nextCurrency: target, previousCurrency: user.currency });
 
             return res.status(200).json({ amount: response.data.amount });
         })
@@ -101,6 +105,7 @@ async function deposit(req, res) {
         return res.status(400).send({ error: 'User not found'});
 
     await Account.findOneAndUpdate(req.userId, { balance: user.balance + amount})
+    await depositLog.create({ code: Date.now(), accountId: req.userId, depositValue: amount, previousBalance: user.balance });
     return res.status(200).json({ balance: user.balance + amount });
 }
 
@@ -119,6 +124,7 @@ async function withdraw(req, res) {
         return res.status(400).send({ error: 'Insufficient balance'})
 
     await Account.findOneAndUpdate(req.userId, { balance: user.balance - amount})
+    await withdrawLog.create({ code: Date.now(), accountId: req.userId, withdrawValue: amount, previousBalance: user.balance });
     return res.status(200).json({ balance: user.balance - amount });
 }
 
