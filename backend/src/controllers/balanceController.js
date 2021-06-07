@@ -105,11 +105,21 @@ async function deposit(req, res) {
 }
 
 async function withdraw(req, res) {
-    let { amount } = req.params;
+    let { amount } = req.body;
 
-    // do something in the DB
+    if (!amount || amount <= 0)
+        return res.status(400).send({ error: 'Invalid amount'});
+    
+    const user = await Account.findOne({ _id: req.userId });
 
-    return res.sendStatus(200);
+    if (!user)
+        return res.status(400).send({ error: 'User not found'});
+
+    if (user.balance < amount)
+        return res.status(400).send({ error: 'Insufficient balance'})
+
+    await Account.findOneAndUpdate(req.userId, { balance: user.balance - amount})
+    return res.status(200).json({ balance: user.balance - amount });
 }
 
 async function balance(req, res) {
