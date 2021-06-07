@@ -124,9 +124,12 @@ async function withdraw(req, res) {
 
 async function balance(req, res) {
 
-    // get balance from DB
+    const user = await Account.findOne({ _id: req.userId });
 
-    return res.sendStatus(200);
+    if (!user)
+        return res.status(400).send({ error: 'User not found'});
+
+    return res.status(200).json({ balance: user.balance });
 }
 
 module.exports = { currencyExchange, deposit, withdraw, balance, authenticate, register }
