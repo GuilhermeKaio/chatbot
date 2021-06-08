@@ -164,7 +164,7 @@ a {
 
 .message{
   font-weight: bold;
-  max-width: 65vw;
+  max-width: 45vw;
   color:  white;
   margin-bottom: 2ch;
 }
@@ -172,7 +172,7 @@ a {
 .bot{
   background-color: #FE746F;
   border-radius: 15px 15px 15px 0px;
-  padding: 0.4rem 0.1rem 0.4rem 1rem;
+  padding: 0.4rem 1rem 0.4rem 1rem;
 }
 
 .user{
